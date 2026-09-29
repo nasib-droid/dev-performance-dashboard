@@ -1,26 +1,658 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* ============================================================
+   LUMA DESIGN TOKENS — copied verbatim from luma-design-system.html
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --sand-0: #ffffff;
+  --sand-10: #f8f7f7;
+  --sand-20: #ebebea;
+  --sand-30: #d8d6d4;
+  --sand-40: #b0adab;
+  --sand-50: #77736e;
+  --sand-60: #585450;
+  --sand-70: #3f3c39;
+  --sand-80: #2b2926;
+  --sand-90: #000000;
+
+  --ocean-10: #ecf3fe;
+  --ocean-20: #d5e5fd;
+  --ocean-40: #6fa8f8;
+  --ocean-60: #2563eb;
+
+  --evergreen-10: #ecfdf5;
+  --evergreen-20: #d1fae5;
+  --evergreen-40: #34d399;
+  --evergreen-50: #10b981;
+  --evergreen-70: #065f46;
+
+  --rust-10: #fff1f0;
+  --rust-20: #ffe0de;
+  --rust-50: #ef4444;
+  --rust-60: #dc2626;
+
+  --ember-10: #fff7ed;
+  --ember-20: #ffedd5;
+  --ember-50: #f97316;
+  --ember-60: #ea580c;
+
+  --shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-sm:
+    0 1px 3px rgba(0, 0, 0, 0.02), 0 2px 7px rgba(0, 0, 0, 0.03),
+    0 3px 14px rgba(0, 0, 0, 0.04), 0 7px 29px rgba(0, 0, 0, 0.05);
+  --shadow:
+    0 1.6px 3px rgba(0, 0, 0, 0.02), 0 4.2px 7px rgba(0, 0, 0, 0.03),
+    0 8px 14px rgba(0, 0, 0, 0.04), 0 17.5px 29px rgba(0, 0, 0, 0.05),
+    0 48px 80px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 3px 3px rgba(0, 0, 0, 0.03), 0 8px 7px rgba(0, 0, 0, 0.04),
+    0 17px 14px rgba(0, 0, 0, 0.05), 0 35px 29px rgba(0, 0, 0, 0.06);
+  --shadow-modal:
+    0 0 0 1px rgba(0, 0, 0, 0.06), 0 3px 3px rgba(0, 0, 0, 0.03),
+    0 8px 7px rgba(0, 0, 0, 0.04), 0 17px 14px rgba(0, 0, 0, 0.05),
+    0 35px 29px rgba(0, 0, 0, 0.06);
+
+  --radius-xxs: 2px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 100px;
+
+  --font:
+    -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-size-xxxs: 0.625rem;
+  --font-size-xxs: 0.75rem;
+  --font-size-xs: 0.8125rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xxl: 1.375rem;
+  --font-size-xxxl: 1.5rem;
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 600;
+
+  --line-height-default: 1.5;
+  --line-height-reduced: 1.3;
+  --line-height-title: 1.2;
+
+  --input-height: calc(2.25rem + 2px);
+  --input-height-sm: calc(1.75rem + 2px);
+  --input-height-lg: calc(2.625rem + 2px);
+  --input-padding: 0.625rem 0.875rem;
+  --input-border: 1px solid var(--sand-30);
+  --input-radius: var(--radius-sm);
+
+  --transition-fn: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: all 0.3s var(--transition-fn);
+  --fast-transition: all 0.2s var(--transition-fn);
+
+  --page-bg: var(--sand-10);
+  --card-bg: var(--sand-0);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font);
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--line-height-default);
+  color: var(--sand-80);
+  background: var(--page-bg);
+}
+
+/* ============================================================
+   CARD SURFACE — same spec as Luma's "preview-card" container
+   (Sand 0 bg · Sand 20 border · radius-lg), padding bumped to the
+   24px used by Luma's own form-section for full content blocks.
+   ============================================================ */
+.card {
+  background: var(--sand-0);
+  border: 1px solid var(--sand-20);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  height: var(--input-height);
+  padding: 0 1rem;
+  font-family: var(--font);
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--fast-transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--sand-80);
+  color: var(--sand-0);
+  border-color: var(--sand-80);
+}
+.btn-primary:hover {
+  background: var(--sand-60);
+  border-color: var(--sand-60);
+}
+.btn-secondary {
+  background: var(--sand-20);
+  color: var(--sand-60);
+  border-color: transparent;
+}
+.btn-secondary:hover {
+  background: var(--sand-60);
+  color: white;
+}
+.btn-tertiary {
+  background: var(--sand-0);
+  color: var(--sand-70);
+  border-color: var(--sand-30);
+}
+.btn-tertiary:hover {
+  background: var(--sand-20);
+  border-color: var(--sand-50);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--sand-60);
+  border-color: transparent;
+}
+.btn-ghost:hover {
+  background: var(--sand-10);
+  color: var(--sand-80);
+}
+.btn-positive {
+  background: var(--evergreen-50);
+  color: #fff;
+  border-color: var(--evergreen-50);
+}
+.btn-positive:hover {
+  filter: brightness(0.92);
+}
+.btn-destructive {
+  background: var(--rust-50);
+  color: #fff;
+  border-color: var(--rust-50);
+}
+.btn-destructive:hover {
+  filter: brightness(0.92);
+}
+.btn-sm {
+  height: var(--input-height-sm);
+  padding: 0 0.75rem;
+  font-size: var(--font-size-xs);
+  border-radius: 12px;
+}
+.btn-lg {
+  height: var(--input-height-lg);
+  padding: 0 1.375rem;
+  font-size: var(--font-size-md);
+  border-radius: 12px;
+}
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--sand-20);
+  color: var(--sand-60);
+  border: none;
+}
+.btn-icon-md {
+  width: 38px;
+  height: 38px;
+  padding: 6px;
+}
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.input-label {
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+  color: var(--sand-70);
+}
+.input-hint {
+  font-size: var(--font-size-xs);
+  color: var(--sand-50);
+}
+.input-error-msg {
+  font-size: var(--font-size-xs);
+  color: var(--rust-60);
+}
+
+.input {
+  height: var(--input-height);
+  padding: var(--input-padding);
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: var(--weight-regular);
+  color: var(--sand-80);
+  background: var(--sand-0);
+  border: var(--input-border);
+  border-radius: var(--input-radius);
+  outline: none;
+  transition: var(--fast-transition);
+  width: 100%;
+}
+.input::placeholder {
+  color: var(--sand-40);
+}
+.input:hover {
+  border-color: var(--sand-40);
+}
+.input:focus {
+  border-color: var(--sand-80);
+  box-shadow: 0 0 0 3px rgba(43, 41, 38, 0.08);
+}
+.input:disabled {
+  background: var(--sand-10);
+  color: var(--sand-40);
+  cursor: not-allowed;
+}
+.input.input-error {
+  border-color: var(--rust-50);
+}
+
+textarea.input {
+  height: auto;
+  min-height: 5rem;
+  line-height: 1.5;
+  resize: vertical;
+  padding: 0.5rem 0.875rem;
+}
+
+.select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 0.75rem;
+  width: 10px;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23585450' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  transition: var(--fast-transition);
+}
+.select-wrap:hover::after {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+select.input {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  padding: 0 2.5rem 0 0.75rem;
+  cursor: pointer;
+  background: var(--sand-20);
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--sand-60);
+  font-weight: var(--weight-bold);
+  border-radius: 12px;
+  height: var(--input-height-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+select.input:hover {
+  background: var(--sand-60);
+  color: white;
+}
+
+.input-search {
+  border-radius: var(--radius-full);
+}
+
+/* ============================================================
+   PILLS
+   ============================================================ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.3125rem 0.625rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-full);
+  line-height: 1;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.pill-default {
+  background: var(--sand-20);
+  color: var(--sand-70);
+}
+.pill-blue {
+  background: var(--ocean-10);
+  color: var(--ocean-60);
+}
+.pill-green {
+  background: var(--evergreen-10);
+  color: var(--evergreen-70);
+}
+.pill-orange {
+  background: var(--ember-10);
+  color: var(--ember-60);
+}
+.pill-red {
+  background: var(--rust-10);
+  color: var(--rust-60);
+}
+.pill-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: var(--font-size-xxs);
+}
+
+/* ============================================================
+   TABLES & LIST VIEWS
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table thead tr {
+  border-bottom: 1px solid var(--sand-20);
+}
+.data-table th {
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-xxs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sand-50);
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-sm);
+  color: var(--sand-70);
+  border-bottom: 1px solid var(--sand-20);
+  vertical-align: middle;
+}
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+.data-table tbody tr {
+  transition: var(--fast-transition);
+}
+.data-table tbody tr:hover {
+  background: var(--sand-10);
+}
+.table-container {
+  border: 1px solid var(--sand-20);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--sand-0);
+}
+
+/* ============================================================
+   MODALS / POPUPS
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 41, 38, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 200;
+}
+.modal {
+  background: var(--sand-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+  position: relative;
+}
+/* Wide modal — previously flagged gap (content needs more than 400px), interim
+   treatment agreed: same 1a-modal spec, max-width bumped (proposed 1a-modal-wide). */
+.modal-wide {
+  max-width: 700px;
+}
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+.modal-close {
+  width: 28px;
+  height: 28px;
+  background: var(--sand-10);
+  border: none;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--sand-60);
+  flex-shrink: 0;
+  transition: var(--fast-transition);
+}
+.modal-close:hover {
+  background: var(--sand-20);
+  color: var(--sand-80);
+}
+.modal-body {
+  padding: 0 1.25rem 1.25rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.modal-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-bold);
+  color: var(--sand-80);
+  margin-bottom: 0.375rem;
+  line-height: var(--line-height-title);
+}
+.modal-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--sand-50);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   NAVIGATION BAR
+   ============================================================ */
+.nav-demo {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--sand-20);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-bold);
+  color: var(--sand-80);
+  text-decoration: none;
+}
+.nav-logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--sand-80);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.75rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--sand-60);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: var(--fast-transition);
+}
+.nav-link:hover {
+  background: var(--sand-10);
+  color: var(--sand-80);
+}
+.nav-link.active {
+  color: var(--sand-80);
+  background: var(--sand-10);
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.page-title-main {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--weight-bold);
+  color: var(--sand-80);
+  line-height: var(--line-height-title);
+}
+.breadcrumb {
+  font-size: var(--font-size-sm);
+  color: var(--sand-50);
+}
+.heading-3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-bold);
+  color: var(--sand-80);
+  line-height: var(--line-height-title);
+}
+.overline {
+  font-size: var(--font-size-xxs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sand-50);
+}
+.body-small {
+  font-size: var(--font-size-sm);
+  color: var(--sand-50);
+}
+
+/* ============================================================
+   EMPTY STATES
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  gap: 0.5rem;
+}
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.375rem;
+  color: var(--sand-40);
+  opacity: 0.7;
+}
+.empty-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-medium);
+  color: var(--sand-70);
+}
+.empty-desc {
+  font-size: var(--font-size-sm);
+  color: var(--sand-50);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   LOADING STATE
+   ============================================================ */
+.loading-state-text {
+  font-size: var(--font-size-sm);
+  color: var(--sand-50);
+  animation: fade-pulse 1.6s ease-in-out infinite;
+}
+@keyframes fade-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
