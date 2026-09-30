@@ -32,7 +32,19 @@ function Change({ current, previous, higherIsBetter, format }: {
   );
 }
 
-export function QuarterComparison({ lines, currentLabel, previousLabel }: { lines: Line[]; currentLabel: string; previousLabel: string }) {
+export function QuarterComparison({
+  lines,
+  currentLabel,
+  previousLabel,
+  currentDays,
+  previousDays,
+}: {
+  lines: Line[];
+  currentLabel: string;
+  previousLabel: string;
+  currentDays: number;
+  previousDays: number;
+}) {
   const plain = (n: number | null) => (n == null ? "—" : String(Math.round(n)));
 
   return (
@@ -80,6 +92,13 @@ export function QuarterComparison({ lines, currentLabel, previousLabel }: { line
       </table>
       <p className="body-small" style={{ padding: ".5rem 1rem", borderTop: "1px solid var(--sand-20)" }}>
         {currentLabel} compared with {previousLabel}. Green is better, red is worse.
+      </p>
+      <p
+        className="body-small"
+        style={{ padding: "0 1rem .5rem", color: "var(--sand-40)", fontSize: "var(--font-size-xxs)" }}
+      >
+        Points per working day uses {currentDays} working days for {currentLabel} and {previousDays} for {previousLabel},
+        counting Monday to Friday. Leave and public holidays are not excluded.
       </p>
     </div>
   );

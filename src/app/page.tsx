@@ -310,7 +310,7 @@ export default async function DashboardPage({
       {/* Stat tile — flagged gap: Luma has no dedicated dashboard stat-tile component,
           so this is composed from the standard card surface + page-title-main / overline
           typography (interim treatment agreed with Andrew, proposed token 1a-stat-tile). */}
-      <div className="card mb-6" style={{ display: "flex", alignItems: "baseline", gap: ".75rem" }}>
+      <div className="card mb-6" style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: ".75rem" }}>
         <span className="overline">Points delivered</span>
         <span className="page-title-main">{rangeTotal}</span>
         <span className="body-small">
@@ -326,6 +326,12 @@ export default async function DashboardPage({
           >
             · on pace for {teamPace} pts
           </span>
+        )}
+        {rangeWorkingDays > 0 && (
+          <p className="body-small" style={{ flexBasis: "100%", color: "var(--sand-40)", fontSize: "var(--font-size-xxs)" }}>
+            Points per working day uses {rangeWorkingDays} working {rangeWorkingDays === 1 ? "day" : "days"} in this
+            period so far, counting Monday to Friday. Leave and public holidays are not excluded.
+          </p>
         )}
       </div>
 
@@ -357,6 +363,8 @@ export default async function DashboardPage({
           lines={comparisonLines}
           currentLabel={`${targetQuarterLabel}${isCurrentQuarter ? " so far" : ""}`}
           previousLabel={quarterLabel(prevQuarterKey)}
+          currentDays={currentDays}
+          previousDays={previousDays}
         />
       </section>
 
