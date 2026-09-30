@@ -2,11 +2,12 @@ import { taskSize } from "@/lib/targets";
 
 type Task = { points: number | null; isBug: boolean };
 
-export function summarize(tasks: Task[]) {
+export function summarize(tasks: Task[], workingDays = 0) {
   const points = tasks.reduce((sum, t) => sum + (t.points ?? 0), 0);
   const bugs = tasks.filter((t) => t.isBug).length;
   return {
     points,
+    pointsPerDay: workingDays > 0 ? points / workingDays : null,
     tasks: tasks.length,
     major: tasks.filter((t) => taskSize(t.points) === "Major").length,
     bugs,

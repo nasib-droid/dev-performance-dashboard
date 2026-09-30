@@ -2,9 +2,9 @@
 
 import { setAssigneeTarget } from "@/lib/actions";
 
-type Row = { assignee: string; points: number; target: number | null; pace: number | null };
+type Row = { assignee: string; points: number; target: number | null; pace: number | null; perDay: number | null };
 
-function TargetRow({ assignee, points, target, pace, quarter }: Row & { quarter: string }) {
+function TargetRow({ assignee, points, target, pace, perDay, quarter }: Row & { quarter: string }) {
   const met = target != null && points >= target;
   const onTrack = target == null || (pace ?? 0) >= target;
   return (
@@ -13,6 +13,7 @@ function TargetRow({ assignee, points, target, pace, quarter }: Row & { quarter:
         {assignee}
       </span>
       <div className="flex flex-wrap items-center justify-end gap-2">
+        {perDay != null && <span className="body-small">{perDay.toFixed(1)} pts / working day</span>}
         {pace != null && (
           <span className="body-small" style={{ color: onTrack ? "var(--evergreen-70)" : "var(--ember-60)" }}>
             on pace for {pace} pts

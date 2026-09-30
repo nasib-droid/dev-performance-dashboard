@@ -15,9 +15,40 @@ export function quarterLabel(key: string) {
   return `${q} ${year}`;
 }
 
+// The quarters just before and just after the one containing `from`, as ready-made date ranges.
+export function adjacentQuarters(from: string) {
+  const { start, end } = getCurrentQuarterRange(new Date(`${from}T00:00:00Z`));
+  const range = (day: Date) => {
+    const q = getCurrentQuarterRange(day);
+    return { from: toDateStr(q.start), to: toDateStr(q.end), label: quarterLabel(quarterKey(q.start)) };
+  };
+  return {
+    prev: range(new Date(start.getTime() - 86_400_000)),
+    next: range(new Date(end.getTime() + 86_400_000)),
+  };
+}
+
 // Day number of today counted from `start` (start itself is day 1).
 export function dayNumberSince(start: Date) {
   return Math.floor((Date.now() - start.getTime()) / 86_400_000) + 1;
+}
+
+// Mon–Fri days from start to end inclusive; 0 if end is before start.
+// ponytail: weekends only, leave and public holidays aren't subtracted.
+export function weekdaysBetween(start: Date, end: Date) {
+  let n = 0;
+  for (const d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    const day = d.getUTCDay();
+    if (day !== 0 && day !== 6) n++;
+  }
+  return n;
+}
+
+// The earlier of `end` and today, so rates for a running period only count days that have happened.
+export function untilToday(end: Date) {
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return today < end ? today : end;
 }
 
 export function quarterDays(d: Date) {

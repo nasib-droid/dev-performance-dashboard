@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { workingDays, cycleTime, median, cardCreatedAt } from "../src/lib/cycle.ts";
+import { weekdaysBetween, adjacentQuarters } from "../src/lib/quarter.ts";
 
 // Times are IST (+05:30). 2026-09-25 is a Friday.
 const ist = (s) => new Date(`${s}+05:30`);
@@ -64,5 +65,19 @@ assert.equal(cardCreatedAt("6a9698ceebcb4357eee575e7").toISOString(), "2026-09-0
 assert.equal(median([]), null);
 assert.equal(median([3, 1, 2]), 2);
 assert.equal(median([4, 1, 2, 3]), 2.5);
+
+const utc = (s) => new Date(`${s}T00:00:00Z`);
+assert.equal(weekdaysBetween(utc("2026-09-21"), utc("2026-09-25")), 5); // Mon-Fri
+assert.equal(weekdaysBetween(utc("2026-09-25"), utc("2026-09-28")), 2); // Fri + Mon
+assert.equal(weekdaysBetween(utc("2026-09-26"), utc("2026-09-27")), 0); // weekend
+assert.equal(weekdaysBetween(utc("2026-07-01"), utc("2026-09-30")), 66); // Q3 2026
+assert.equal(weekdaysBetween(utc("2026-09-30"), utc("2026-09-01")), 0); // end before start
+
+const around = adjacentQuarters("2026-09-30");
+assert.deepEqual(around.prev, { from: "2026-04-01", to: "2026-06-30", label: "Q2 2026" });
+assert.deepEqual(around.next, { from: "2026-10-01", to: "2026-12-31", label: "Q4 2026" });
+assert.equal(adjacentQuarters("2026-01-15").prev.label, "Q4 2025"); // year boundary
+assert.equal(adjacentQuarters("2026-12-31").next.label, "Q1 2027");
+assert.equal(adjacentQuarters("2026-08-10").prev.to, "2026-06-30"); // mid-quarter date
 
 console.log("cycle checks passed");

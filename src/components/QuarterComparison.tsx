@@ -4,6 +4,7 @@ type Line = { name: string; current: Summary; previous: Summary; target: number 
 
 const METRICS: { key: keyof Summary; label: string; higherIsBetter: boolean; format?: (n: number | null) => string }[] = [
   { key: "points", label: "Points", higherIsBetter: true },
+  { key: "pointsPerDay", label: "Pts per working day", higherIsBetter: true, format: formatRate },
   { key: "tasks", label: "Tasks", higherIsBetter: true },
   { key: "major", label: "Major tasks", higherIsBetter: true },
   { key: "bugs", label: "Bugs", higherIsBetter: false },

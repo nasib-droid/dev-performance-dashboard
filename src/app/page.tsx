@@ -12,6 +12,8 @@ import {
   quarterLabel,
   quarterDays,
   dayNumberSince,
+  weekdaysBetween,
+  untilToday,
 } from "@/lib/quarter";
 import { BUG_CAPS, TASK_SIZES, taskSize } from "@/lib/targets";
 import { BreakdownTable } from "@/components/BreakdownTable";
@@ -151,13 +153,18 @@ export default async function DashboardPage({
   }
   const targetByAssignee = new Map(targetRows.map((r) => [r.assignee, r.target]));
   const knownAssignees = [...new Set(causeOptions.map((t) => t.assignee))].filter((a) => a !== "Unassigned").sort();
+  // Working days (Mon–Fri) in the selected period that have happened so far.
+  const rangeWorkingDays = weekdaysBetween(start, untilToday(end));
+  const perDay = (points: number) => (rangeWorkingDays > 0 ? points / rangeWorkingDays : null);
   const targetTableRows = knownAssignees.map((assignee) => ({
     assignee,
     points: pointsByAssignee.get(assignee) ?? 0,
     target: targetByAssignee.get(assignee) ?? null,
     pace: pace(pointsByAssignee.get(assignee) ?? 0),
+    perDay: perDay(pointsByAssignee.get(assignee) ?? 0),
   }));
   const teamPace = pace(rangeTotal);
+  const teamPerDay = perDay(rangeTotal);
   const teamTarget = targetRows.reduce((sum, r) => sum + r.target, 0);
   const weeklyTarget = teamTarget > 0 ? Math.round((teamTarget * 7) / quarterDays(start)) : null;
   const volumeTasks = tasksInRange.map((t) => ({
@@ -234,18 +241,20 @@ export default async function DashboardPage({
     const rows = allTargetRows.filter((r) => r.quarter === q && (name === undefined || r.assignee === name));
     return rows.length ? rows.reduce((sum, r) => sum + r.target, 0) : null;
   };
+  const currentDays = weekdaysBetween(quarter.start, untilToday(quarter.end));
+  const previousDays = weekdaysBetween(previousQuarter.start, previousQuarter.end);
   const comparisonLines = [
     ...knownAssignees.map((name) => ({
       name,
-      current: summarize(currentTasks.filter((t) => t.assignee === name)),
-      previous: summarize(previousTasks.filter((t) => t.assignee === name)),
+      current: summarize(currentTasks.filter((t) => t.assignee === name), currentDays),
+      previous: summarize(previousTasks.filter((t) => t.assignee === name), previousDays),
       target: targetFor(targetQuarter, name),
       previousTarget: targetFor(prevQuarterKey, name),
     })),
     {
       name: "Team",
-      current: summarize(currentTasks),
-      previous: summarize(previousTasks),
+      current: summarize(currentTasks, currentDays),
+      previous: summarize(previousTasks, previousDays),
       target: targetFor(targetQuarter),
       previousTarget: targetFor(prevQuarterKey),
     },
@@ -309,6 +318,7 @@ export default async function DashboardPage({
             ? `/ ${teamTarget} pts ${targetQuarterLabel} target · ${weeklyTarget} pts a week`
             : `No ${targetQuarterLabel} targets set yet. Add them under Volume.`}
         </span>
+        {teamPerDay != null && <span className="body-small">· {teamPerDay.toFixed(1)} pts / working day</span>}
         {teamPace != null && (
           <span
             className="body-small"
