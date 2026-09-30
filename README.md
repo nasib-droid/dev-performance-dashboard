@@ -1,4 +1,4 @@
-# Hotsourced Dev Performance Dashboard Enhanced
+# Hotsourced Dev Performance Dashboard
 
 Internal dashboard that pulls delivered-task data from Trello and tracks it against quarterly targets.
 
