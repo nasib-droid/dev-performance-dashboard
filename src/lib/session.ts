@@ -9,7 +9,7 @@ function getKey() {
     new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign", "verify"]
   );
 }
 
@@ -34,8 +34,12 @@ export async function isValidSession(cookieValue: string | undefined) {
   const [expiresAtStr, sig] = cookieValue.split(".");
   const expiresAt = Number(expiresAtStr);
   if (!expiresAt || !sig || expiresAt < Date.now()) return false;
-  const expectedSig = await sign(expiresAt);
-  return expectedSig === sig;
+  return crypto.subtle.verify(
+    "HMAC",
+    await getKey(),
+    Buffer.from(sig, "base64url"),
+    new TextEncoder().encode(String(expiresAt))
+  );
 }
 
 export { COOKIE_NAME };

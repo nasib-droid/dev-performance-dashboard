@@ -6,6 +6,25 @@ export function getCurrentQuarterRange(now = new Date()) {
   return { start, end };
 }
 
+export function quarterKey(d: Date) {
+  return `${d.getUTCFullYear()}-Q${Math.floor(d.getUTCMonth() / 3) + 1}`;
+}
+
+export function quarterLabel(key: string) {
+  const [year, q] = key.split("-");
+  return `${q} ${year}`;
+}
+
+// Day number of today counted from `start` (start itself is day 1).
+export function dayNumberSince(start: Date) {
+  return Math.floor((Date.now() - start.getTime()) / 86_400_000) + 1;
+}
+
+export function quarterDays(d: Date) {
+  const { start, end } = getCurrentQuarterRange(d);
+  return (end.getTime() - start.getTime()) / 86_400_000 + 1;
+}
+
 function parseDateStr(value: string | undefined) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const [y, m, d] = value.split("-").map(Number);

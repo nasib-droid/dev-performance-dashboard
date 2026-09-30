@@ -6,7 +6,7 @@ Internal dashboard that pulls delivered-task data from Trello and tracks it agai
 
 1. Copy the env file and fill in real values:
    ```bash
-   cp .env.local.example .env.local
+   cp .env.example .env
    ```
    - `DATABASE_URL` — Neon Postgres connection string
    - `DASHBOARD_PASSWORD` — shared password for the login gate
@@ -25,6 +25,10 @@ Internal dashboard that pulls delivered-task data from Trello and tracks it agai
 
 Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/login`.
 
+`npm run check` runs the cycle-time self-check (working-day and time-in-list maths).
+
 ## Deploying
 
-Push to Vercel, connect the same Neon database, and set all six env vars above in the Vercel project settings.
+Import the GitHub repo into Vercel and set all six env vars above in the Vercel project settings (Settings → Environment Variables). Every push to `main` then deploys to production.
+
+If the schema changes, run `npm run db:push` locally against the same `DATABASE_URL` before or right after deploying.

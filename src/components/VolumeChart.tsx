@@ -12,7 +12,6 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
-import { WEEKLY_POINT_TARGET } from "@/lib/targets";
 
 // Luma data-series colours: Ocean, Evergreen, Ember, then Sand tones for any additional assignees.
 const COLORS = ["#2563eb", "#10b981", "#f97316", "#77736e", "#dc2626"];
@@ -23,10 +22,12 @@ export function VolumeChart({
   data,
   assignees,
   tasks,
+  weeklyTarget,
 }: {
   data: Record<string, string | number>[];
   assignees: string[];
   tasks: Task[];
+  weeklyTarget: number | null;
 }) {
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
 
@@ -69,12 +70,14 @@ export function VolumeChart({
               }}
             />
           ))}
-          <ReferenceLine
-            y={WEEKLY_POINT_TARGET}
-            stroke="#dc2626"
-            strokeDasharray="4 4"
-            label={{ value: `Target ${WEEKLY_POINT_TARGET}/wk`, fontSize: 12, fill: "#dc2626", position: "right" }}
-          />
+          {weeklyTarget != null && (
+            <ReferenceLine
+              y={weeklyTarget}
+              stroke="#dc2626"
+              strokeDasharray="4 4"
+              label={{ value: `Target ${weeklyTarget}/wk`, fontSize: 12, fill: "#dc2626", position: "right" }}
+            />
+          )}
         </BarChart>
       </ResponsiveContainer>
 

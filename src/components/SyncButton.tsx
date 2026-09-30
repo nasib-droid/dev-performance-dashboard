@@ -13,9 +13,15 @@ export function SyncButton() {
     setMessage(null);
     try {
       const res = await fetch("/api/sync", { method: "POST" });
-      const data = await res.json();
+      if (res.redirected) {
+        window.location.href = "/login";
+        return;
+      }
+      const data = await res.json().catch(() => ({ message: `Sync failed (${res.status})` }));
       setMessage(data.message);
-      router.refresh();
+      if (res.ok) router.refresh();
+    } catch {
+      setMessage("Sync failed, check your connection");
     } finally {
       setLoading(false);
     }

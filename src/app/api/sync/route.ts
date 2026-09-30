@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { runTrelloSync } from "@/lib/trello";
 
+export const maxDuration = 60;
+
 export async function POST() {
   try {
     const result = await runTrelloSync();
