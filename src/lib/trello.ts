@@ -1,6 +1,8 @@
 import { max, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { cardMoves, deliveredTasks } from "@/db/schema";
+import { QA_LIST } from "@/lib/cycle";
+import { KNOWN_ASSIGNEES } from "@/lib/targets";
 
 type TrelloCard = { id: string; name: string };
 type TrelloAction = {
@@ -18,6 +20,53 @@ function auth() {
   const token = process.env.TRELLO_TOKEN;
   if (!key || !token) throw new Error("TRELLO_API_KEY / TRELLO_TOKEN not set");
   return `key=${key}&token=${token}`;
+}
+
+// --- QA feedback: read live from Trello, nothing is stored ---
+
+export type QaCard = { id: string; name: string; shortUrl: string; badges: { comments: number } };
+
+async function trelloGet<T>(path: string): Promise<T | null> {
+  const res = await fetch(`https://api.trello.com/1/${path}${path.includes("?") ? "&" : "?"}${auth()}`, {
+    cache: "no-store",
+  });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(`Trello request failed: ${res.status}`);
+  return res.json();
+}
+
+async function qaListId() {
+  const lists = await trelloGet<{ id: string; name: string }[]>(
+    `boards/${process.env.TRELLO_BOARD_ID}/lists?filter=open&fields=name`
+  );
+  const qa = lists?.find((l) => l.name === QA_LIST);
+  if (!qa) throw new Error(`No "${QA_LIST}" list on the Trello board`);
+  return qa.id;
+}
+
+export async function fetchQaCards() {
+  const listId = await qaListId();
+  return (await trelloGet<QaCard[]>(`lists/${listId}/cards?fields=name,shortUrl,badges`)) ?? [];
+}
+
+// The card, but only while it's open and sitting in QA; feedback links close once it moves on.
+export async function fetchCardInQa(cardId: string) {
+  const [card, listId] = await Promise.all([
+    trelloGet<{ id: string; name: string; idList: string; closed: boolean; shortUrl: string }>(
+      `cards/${cardId}?fields=name,idList,closed,shortUrl`
+    ),
+    qaListId(),
+  ]);
+  return card && !card.closed && card.idList === listId ? card : null;
+}
+
+export async function addCardComment(cardId: string, text: string) {
+  const res = await fetch(`https://api.trello.com/1/cards/${cardId}/actions/comments?${auth()}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error(`Trello comment failed: ${res.status}`);
 }
 
 async function fetchDeliveredCards(): Promise<TrelloCard[]> {
@@ -75,7 +124,6 @@ function findDeliveredDate(cardId: string, actions: TrelloAction[], deliveredLis
 // The board has legacy cards that predate the "Name - Task(points)" convention and
 // contain stray " - " punctuation, so a bare split-on-first-delimiter misreads those
 // titles as the assignee. Only accept the prefix if it's actually one of the team.
-const KNOWN_ASSIGNEES = ["Nasib", "Andrew", "Himal"];
 
 function parseAssignee(title: string) {
   const idx = title.indexOf(" - ");

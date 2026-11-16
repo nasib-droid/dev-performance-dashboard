@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { workingDays, cycleTime, median, cardCreatedAt } from "../src/lib/cycle.ts";
 import { weekdaysBetween, adjacentQuarters } from "../src/lib/quarter.ts";
-
+import { feedbackAlertText, notifyGoogleChat } from "../src/lib/chat.ts";
+import { createServer } from "node:http";
 // Times are IST (+05:30). 2026-09-25 is a Friday.
 const ist = (s) => new Date(`${s}+05:30`);
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} != ${b}`);
@@ -80,4 +81,28 @@ assert.equal(adjacentQuarters("2026-01-15").prev.label, "Q4 2025"); // year boun
 assert.equal(adjacentQuarters("2026-12-31").next.label, "Q1 2027");
 assert.equal(adjacentQuarters("2026-08-10").prev.to, "2026-06-30"); // mid-quarter date
 
-console.log("cycle checks passed");
+// Google Chat alert: message shape, and that alerts never throw.
+const alert = feedbackAlertText("Weekly Newsletter", "Renuka", "Works well", "https://trello.com/c/abc");
+assert.equal(alert, "*New QA feedback* on *Weekly Newsletter*\nFrom Renuka:\nWorks well\n<https://trello.com/c/abc|Open the card in Trello>");
+assert.ok(feedbackAlertText("T", "N", "x".repeat(600), "u").includes(`${"x".repeat(500)}…`));
+
+const received = [];
+const server = createServer((req, res) => {
+  let body = "";
+  req.on("data", (c) => (body += c));
+  req.on("end", () => {
+    received.push({ type: req.headers["content-type"], body: JSON.parse(body) });
+    res.statusCode = req.url === "/fail" ? 500 : 200;
+    res.end("{}");
+  });
+});
+await new Promise((r) => server.listen(0, r));
+const base = `http://127.0.0.1:${server.address().port}`;
+assert.equal(await notifyGoogleChat("hello", `${base}/ok`), true);
+assert.deepEqual(received[0], { type: "application/json; charset=UTF-8", body: { text: "hello" } });
+assert.equal(await notifyGoogleChat("hello", `${base}/fail`), false);
+assert.equal(await notifyGoogleChat("hello", ""), false); // not configured: silently skipped
+server.close();
+assert.equal(await notifyGoogleChat("hello", "http://127.0.0.1:1/unreachable"), false);
+
+console.log("all checks passed");

@@ -17,10 +17,26 @@ function toBase64Url(bytes: ArrayBuffer) {
   return Buffer.from(bytes).toString("base64url");
 }
 
-async function sign(expiresAt: number) {
+async function sign(message: string | number) {
   const key = await getKey();
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(String(expiresAt)));
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(String(message)));
   return toBase64Url(sig);
+}
+
+async function verify(message: string, sig: string) {
+  return crypto.subtle.verify("HMAC", await getKey(), Buffer.from(sig, "base64url"), new TextEncoder().encode(message));
+}
+
+// Feedback links are signed per Trello card, so a link can't be guessed or edited to point at
+// another card. Nothing is stored; changing DASHBOARD_PASSWORD invalidates every link.
+const TRELLO_ID = /^[0-9a-f]{24}$/;
+
+export function signFeedbackLink(cardId: string) {
+  return sign(`feedback:${cardId}`);
+}
+
+export async function verifyFeedbackLink(cardId: string, sig: string) {
+  return TRELLO_ID.test(cardId) && /^[\w-]{43}$/.test(sig) && verify(`feedback:${cardId}`, sig);
 }
 
 export async function createSessionCookieValue() {
@@ -34,12 +50,7 @@ export async function isValidSession(cookieValue: string | undefined) {
   const [expiresAtStr, sig] = cookieValue.split(".");
   const expiresAt = Number(expiresAtStr);
   if (!expiresAt || !sig || expiresAt < Date.now()) return false;
-  return crypto.subtle.verify(
-    "HMAC",
-    await getKey(),
-    Buffer.from(sig, "base64url"),
-    new TextEncoder().encode(String(expiresAt))
-  );
+  return verify(String(expiresAt), sig);
 }
 
 export { COOKIE_NAME };

@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 export function Nav() {
   const pathname = usePathname();
 
-  if (pathname === "/login") return null;
+  if (pathname === "/login" || pathname.startsWith("/feedback/")) return null;
 
   return (
     <nav className="nav-demo">
@@ -22,6 +22,9 @@ export function Nav() {
           </Link>
           <Link href="/audits" className={`nav-link ${pathname === "/audits" ? "active" : ""}`}>
             Audits
+          </Link>
+          <Link href="/qa" className={`nav-link ${pathname === "/qa" ? "active" : ""}`}>
+            QA feedback
           </Link>
         </div>
       </div>

@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { COOKIE_NAME, isValidSession } from "@/lib/session";
 
 export async function proxy(req: NextRequest) {
-  if (req.nextUrl.pathname.startsWith("/login")) return NextResponse.next();
+  const { pathname } = req.nextUrl;
+  // /feedback/<card>/<sig> is public; the page and its action check the signed link themselves.
+  if (pathname.startsWith("/login") || pathname.startsWith("/feedback/")) return NextResponse.next();
 
   const cookie = req.cookies.get(COOKIE_NAME)?.value;
   if (await isValidSession(cookie)) return NextResponse.next();

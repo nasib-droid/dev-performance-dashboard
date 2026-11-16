@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, date, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, doublePrecision, boolean, date, timestamp, primaryKey } from "drizzle-orm/pg-core";
 
 export const deliveredTasks = pgTable("delivered_tasks", {
   id: serial("id").primaryKey(),
@@ -59,6 +59,17 @@ export const quarterTargets = pgTable(
     assignee: text("assignee").notNull(),
     quarter: text("quarter").notNull(),
     target: integer("target").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.assignee, t.quarter] })]
+);
+
+// Per-developer bug-rate ceiling for one quarter: most bugs per 100 points delivered.
+export const bugRateTargets = pgTable(
+  "bug_rate_targets",
+  {
+    assignee: text("assignee").notNull(),
+    quarter: text("quarter").notNull(),
+    maxRate: doublePrecision("max_rate").notNull(),
   },
   (t) => [primaryKey({ columns: [t.assignee, t.quarter] })]
 );

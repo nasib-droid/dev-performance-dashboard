@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
-    "check": "node --no-warnings scripts/check-cycle.mjs"
+    "check": "node --no-warnings scripts/check.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

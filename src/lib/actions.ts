@@ -5,8 +5,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { codeAudits, deliveredTasks, auditTasks, quarterTargets } from "@/db/schema";
-import { COOKIE_NAME, createSessionCookieValue } from "@/lib/session";
+import { codeAudits, deliveredTasks, auditTasks, quarterTargets, bugRateTargets } from "@/db/schema";
+import { COOKIE_NAME, createSessionCookieValue, isValidSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
 const SEVERITIES = ["High", "Medium", "Low"];
@@ -17,6 +17,13 @@ const sha256 = (s: string) => createHash("sha256").update(s).digest();
 
 function assert(ok: boolean, message: string): asserts ok {
   if (!ok) throw new Error(message);
+}
+
+// Server actions are POSTs to whichever page uses them, and the feedback pages are public, so
+// the proxy's login check can't be relied on here. Every dashboard action checks the session itself.
+async function requireSession() {
+  const store = await cookies();
+  if (!(await isValidSession(store.get(COOKIE_NAME)?.value))) throw new Error("Not signed in");
 }
 
 export async function login(formData: FormData) {
@@ -38,12 +45,14 @@ export async function login(formData: FormData) {
 }
 
 export async function setSeverity(taskId: number, severity: "High" | "Medium" | "Low") {
+  await requireSession();
   assert(isId(taskId) && SEVERITIES.includes(severity), "Invalid severity");
   await db.update(deliveredTasks).set({ severity }).where(eq(deliveredTasks.id, taskId));
   revalidatePath("/");
 }
 
 export async function setDeliveredAt(taskId: number, deliveredAt: string) {
+  await requireSession();
   assert(isId(taskId) && isDate(deliveredAt), "Invalid date");
   await db
     .update(deliveredTasks)
@@ -53,6 +62,7 @@ export async function setDeliveredAt(taskId: number, deliveredAt: string) {
 }
 
 export async function setCausedBy(taskId: number, causedByTaskId: number | null) {
+  await requireSession();
   assert(isId(taskId) && (causedByTaskId === null || (isId(causedByTaskId) && causedByTaskId !== taskId)), "Invalid task");
   await db.update(deliveredTasks).set({ causedByTaskId }).where(eq(deliveredTasks.id, taskId));
   revalidatePath("/");
@@ -60,11 +70,14 @@ export async function setCausedBy(taskId: number, causedByTaskId: number | null)
 
 // Sync never re-touches is_bug after insert (only set at insert time), so this sticks permanently.
 export async function markNotABug(taskId: number) {
+  await requireSession();
+  assert(isId(taskId), "Invalid task");
   await db.update(deliveredTasks).set({ isBug: false }).where(eq(deliveredTasks.id, taskId));
   revalidatePath("/");
 }
 
 export async function linkAuditTask(auditId: number, taskId: number) {
+  await requireSession();
   assert(isId(auditId) && isId(taskId), "Invalid link");
   await db.insert(auditTasks).values({ auditId, taskId });
   revalidatePath("/");
@@ -72,12 +85,15 @@ export async function linkAuditTask(auditId: number, taskId: number) {
 }
 
 export async function unlinkAuditTask(linkId: number) {
+  await requireSession();
+  assert(isId(linkId), "Invalid link");
   await db.delete(auditTasks).where(eq(auditTasks.id, linkId));
   revalidatePath("/");
   revalidatePath("/audits");
 }
 
 export async function setAssigneeTarget(assignee: string, quarter: string, target: number) {
+  await requireSession();
   assert(
     typeof assignee === "string" && assignee.length > 0 && /^\d{4}-Q[1-4]$/.test(quarter) && isCount(target),
     "Invalid target"
@@ -89,7 +105,26 @@ export async function setAssigneeTarget(assignee: string, quarter: string, targe
   revalidatePath("/");
 }
 
+export async function setBugRateTarget(assignee: string, quarter: string, maxRate: number) {
+  await requireSession();
+  assert(
+    typeof assignee === "string" &&
+      assignee.length > 0 &&
+      /^\d{4}-Q[1-4]$/.test(quarter) &&
+      Number.isFinite(maxRate) &&
+      maxRate >= 0 &&
+      maxRate <= 100,
+    "Invalid bug target"
+  );
+  await db
+    .insert(bugRateTargets)
+    .values({ assignee, quarter, maxRate })
+    .onConflictDoUpdate({ target: [bugRateTargets.assignee, bugRateTargets.quarter], set: { maxRate } });
+  revalidatePath("/");
+}
+
 export async function createAudit(formData: FormData) {
+  await requireSession();
   const auditDate = String(formData.get("auditDate"));
   const majorCount = Number(formData.get("majorCount"));
   const minorCount = Number(formData.get("minorCount"));

@@ -2,6 +2,9 @@ export const BUG_CAPS = {High: 4, Medium: 6, Low: 10} as const;
 export const AUDIT_MAJOR_TARGET = 1;
 export const AUDIT_MINOR_TARGET = 3;
 
+// The developers whose names prefix Trello card titles ("Name - Task(points)").
+export const KNOWN_ASSIGNEES = ["Nasib", "Andrew", "Himal"];
+
 export const TASK_SIZES = [
   { label: "Minor", range: "1–3 pts", max: 3 },
   { label: "Medium", range: "4–7 pts", max: 7 },

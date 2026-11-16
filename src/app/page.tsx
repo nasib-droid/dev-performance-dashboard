@@ -1,6 +1,6 @@
 import { and, gte, lte, eq, isNull, isNotNull, asc, desc, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { deliveredTasks, codeAudits, auditTasks, quarterTargets, cardMoves } from "@/db/schema";
+import { deliveredTasks, codeAudits, auditTasks, quarterTargets, bugRateTargets, cardMoves } from "@/db/schema";
 import {
   getCurrentQuarterRange,
   parseDateRange,
@@ -32,6 +32,7 @@ import { DateRangeForm } from "@/components/DateRangeForm";
 import { CausedByPicker } from "@/components/CausedByPicker";
 import { NotABugButton } from "@/components/NotABugButton";
 import { IndividualTargets } from "@/components/IndividualTargets";
+import { BugRateTargets } from "@/components/BugRateTargets";
 
 export const dynamic = "force-dynamic";
 
@@ -99,8 +100,9 @@ export default async function DashboardPage({
   const prevQuarterKey = quarterKey(previousQuarter.start);
   const rangeCardIds = tasksInRange.map((t) => t.trelloCardId);
 
-  const [allTargetRows, quarterTasks, moves] = await Promise.all([
+  const [allTargetRows, bugTargetRows, quarterTasks, moves] = await Promise.all([
     db.select().from(quarterTargets).where(inArray(quarterTargets.quarter, [targetQuarter, prevQuarterKey])),
+    db.select().from(bugRateTargets).where(eq(bugRateTargets.quarter, targetQuarter)),
     db
       .select()
       .from(deliveredTasks)
@@ -212,10 +214,12 @@ export default async function DashboardPage({
   for (const t of bugsInRange) {
     if (t.severity && t.severity in bugCounts) bugCounts[t.severity as keyof typeof bugCounts]++;
   }
-  const bugRates = [
-    ...bugDevelopers.map((name) => ({ name, rate: summarize(tasksInRange.filter((t) => t.assignee === name)).bugRate })),
-    { name: "Team", rate: summarize(tasksInRange).bugRate },
-  ];
+  const bugRateRows = knownAssignees.map((name) => ({
+    name,
+    rate: summarize(tasksInRange.filter((t) => t.assignee === name)).bugRate,
+    target: bugTargetRows.find((r) => r.assignee === name)?.maxRate ?? null,
+  }));
+  const teamBugRate = summarize(tasksInRange).bugRate;
 
   const DELIVERED = "__delivered__";
   const movesByCard = new Map<string, Move[]>();
@@ -419,19 +423,16 @@ export default async function DashboardPage({
           Bugs by developer, from the Fixed by name on each bug
         </p>
         <BreakdownTable columns={bugColumns} developers={bugDevelopers} tasks={bugTasks} noun="bugs" segmentLabel="Severity" />
-        <div className="mt-4" style={{ display: "flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
-          <span className="input-label" style={{ fontSize: "var(--font-size-sm)" }}>
-            Bugs per 100 points delivered
-          </span>
-          {bugRates.map((r) => (
-            <span key={r.name} className="pill pill-default">
-              {r.name}: {formatRate(r.rate)}
-            </span>
-          ))}
+        <div className="mt-6" style={{ borderTop: "1px solid var(--sand-20)", paddingTop: "1rem" }}>
+          <p className="input-label mb-1" style={{ fontSize: "var(--font-size-sm)" }}>
+            {targetQuarterLabel} bug targets: bugs per 100 points delivered
+          </p>
+          <p className="body-small mb-2">
+            Compares bugs with how much each person delivered, so someone who delivers more isn&rsquo;t penalised for
+            it. The target is the most you aim for, so green means at or under it. Team: {formatRate(teamBugRate)}.
+          </p>
+          <BugRateTargets rows={bugRateRows} quarter={targetQuarter} />
         </div>
-        <p className="body-small mt-1">
-          Compares bugs with how much each person delivered, so someone who delivers more isn&rsquo;t penalised for it.
-        </p>
       </section>
 
       <section className="card mb-6">
