@@ -60,17 +60,9 @@ export default async function FeedbackPage({ params }: { params: Promise<{ card:
     <Shell>
       <p className="overline mb-1">Feedback for</p>
       <h1 className="page-title-main mb-1">{displayTaskName(card.name)}</h1>
-      <p className="breadcrumb mb-4">Your comment is added to this task on Trello, with your name.</p>
-      <div
-        className="body-small mb-6"
-        style={{ background: "var(--sand-10)", border: "1px solid var(--sand-20)", borderRadius: "var(--radius-md)", padding: ".75rem 1rem" }}
-      >
-        <strong style={{ color: "var(--sand-70)", fontWeight: "var(--weight-medium)" }}>
-          This form is only for feedback on this task.
-        </strong>{" "}
-        Tell us whether it works as expected for you. It isn&rsquo;t for suggestions or enhancements: please discuss
-        those with the developers, or log them as a ticket on Trello.
-      </div>
+      <p className="breadcrumb mb-6">
+        Does it work as expected? New ideas go to the developers or Trello, not here.
+      </p>
       <FeedbackForm cardId={cardId} sig={sig} />
     </Shell>
   );

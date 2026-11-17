@@ -58,7 +58,7 @@ export function FeedbackForm({ cardId, sig }: { cardId: string; sig: string }) {
     <form onSubmit={submit}>
       {sentCount > 0 && (
         <div className="pill pill-green mb-4" style={{ whiteSpace: "normal" }}>
-          Thanks, your feedback was added to the Trello card. You can add more below.
+          Thanks, your feedback was added.
         </div>
       )}
       <div className="input-group mb-4">
@@ -79,10 +79,6 @@ export function FeedbackForm({ cardId, sig }: { cardId: string; sig: string }) {
         <label className="input-label" htmlFor="comment">
           Feedback
         </label>
-        <span className="input-hint" style={{ fontSize: "var(--font-size-sm)" }}>
-          One line is plenty, like &ldquo;works well&rdquo;. If something isn&rsquo;t right, a few words on what
-          happened help a lot. More detail is welcome, but never required.
-        </span>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Quick replies">
           {QUICK_REPLIES.map((reply) => {
             const active = comment.trim() === reply;
@@ -105,15 +101,12 @@ export function FeedbackForm({ cardId, sig }: { cardId: string; sig: string }) {
           ref={commentRef}
           placeholder="Or write your own…"
           className="input"
-          rows={7}
+          rows={4}
           value={comment}
           maxLength={MAX_COMMENT}
           required
           onChange={(e) => setComment(e.target.value)}
         />
-        <span className="input-hint">
-          {comment.length}/{MAX_COMMENT} characters
-        </span>
         {error && <span className="input-error-msg">{error}</span>}
       </div>
       <button type="submit" className="btn btn-primary w-full" disabled={pending}>
