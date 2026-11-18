@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { verifyFeedbackLink } from "@/lib/session";
-import { fetchCardInQa } from "@/lib/trello";
+import { fetchFeedbackCard } from "@/lib/trello";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { displayTaskName } from "@/lib/feedback";
 
@@ -35,9 +35,9 @@ export default async function FeedbackPage({ params }: { params: Promise<{ card:
     );
   }
 
-  let card: Awaited<ReturnType<typeof fetchCardInQa>> = null;
+  let card: Awaited<ReturnType<typeof fetchFeedbackCard>> = null;
   try {
-    card = await fetchCardInQa(cardId);
+    card = await fetchFeedbackCard(cardId);
   } catch {
     return (
       <Shell>
@@ -51,7 +51,7 @@ export default async function FeedbackPage({ params }: { params: Promise<{ card:
     return (
       <Shell>
         <h1 className="page-title-main mb-1">Feedback is closed</h1>
-        <p className="breadcrumb">This task is no longer in QA, so it isn&rsquo;t taking feedback.</p>
+        <p className="breadcrumb">This task has been archived on Trello, so it isn&rsquo;t taking feedback.</p>
       </Shell>
     );
   }

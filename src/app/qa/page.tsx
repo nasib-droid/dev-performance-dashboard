@@ -19,8 +19,8 @@ export default async function QaPage() {
       <h1 className="page-title-main mb-1">QA feedback</h1>
       <p className="breadcrumb mb-6">
         Cards in the In QA list, loaded live from Trello. Copy a task&rsquo;s message and paste it into the team chat, or send it to whoever should review
-        it. Each submission is added to the card as a comment with the person&rsquo;s name. A link stops accepting
-        feedback once its card leaves QA.
+        it. Each submission is added to the card as a comment with the person&rsquo;s name. Links keep working after
+        the card leaves QA, until it&rsquo;s archived.
       </p>
 
       {error ? (

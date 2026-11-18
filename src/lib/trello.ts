@@ -49,15 +49,12 @@ export async function fetchQaCards() {
   return (await trelloGet<QaCard[]>(`lists/${listId}/cards?fields=name,shortUrl,badges`)) ?? [];
 }
 
-// The card, but only while it's open and sitting in QA; feedback links close once it moves on.
-export async function fetchCardInQa(cardId: string) {
-  const [card, listId] = await Promise.all([
-    trelloGet<{ id: string; name: string; idList: string; closed: boolean; shortUrl: string }>(
-      `cards/${cardId}?fields=name,idList,closed,shortUrl`
-    ),
-    qaListId(),
-  ]);
-  return card && !card.closed && card.idList === listId ? card : null;
+// The card while it isn't archived, whatever list it's in, so links keep working after QA.
+export async function fetchFeedbackCard(cardId: string) {
+  const card = await trelloGet<{ id: string; name: string; closed: boolean; shortUrl: string }>(
+    `cards/${cardId}?fields=name,closed,shortUrl`
+  );
+  return card && !card.closed ? card : null;
 }
 
 export async function addCardComment(cardId: string, text: string) {

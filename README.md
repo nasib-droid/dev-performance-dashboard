@@ -25,7 +25,7 @@ Internal dashboard that pulls delivered-task data from Trello and tracks it agai
 
 Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/login`.
 
-**QA feedback:** the QA feedback page (`/qa`) lists the cards in Trello's "In QA" list live. "Copy message + link" copies a team-chat message ending in a signed `/feedback/<card>/<signature>` link that anyone can open without logging in. Each submission is posted to that card as a comment headed with the reviewer's name. Links stop working once the card leaves QA, and changing `DASHBOARD_PASSWORD` invalidates every link.
+**QA feedback:** the QA feedback page (`/qa`) lists the cards in Trello's "In QA" list live. "Copy message + link" copies a team-chat message ending in a signed `/feedback/<card>/<signature>` link that anyone can open without logging in. Each submission is posted to that card as a comment headed with the reviewer's name. Links keep working after the card leaves QA (only archiving the card closes them), and changing `DASHBOARD_PASSWORD` invalidates every link.
 
 Optional: set `GOOGLE_CHAT_WEBHOOK_URL` to a Google Chat incoming webhook to get a message for every submission. Use a space that only you are in, so the alerts stay private. Without it, no alerts are sent.
 

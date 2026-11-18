@@ -3,7 +3,7 @@
 import { feedbackAlertText, notifyGoogleChat } from "@/lib/chat";
 import { MAX_COMMENT, MAX_NAME, displayTaskName, type FeedbackResult } from "@/lib/feedback";
 import { verifyFeedbackLink } from "@/lib/session";
-import { addCardComment, fetchCardInQa } from "@/lib/trello";
+import { addCardComment, fetchFeedbackCard } from "@/lib/trello";
 
 // Public: anyone holding a signed feedback link can call this, without logging in.
 // The link signature is the only thing that authorises it, so it's checked on every call.
@@ -20,10 +20,10 @@ export async function submitFeedback(cardId: string, sig: string, name: string, 
   if (cleanComment.length > MAX_COMMENT) return { ok: false, error: `Feedback can be up to ${MAX_COMMENT} characters.` };
 
   const safeName = cleanName.replace(/[*_`<>|]/g, "");
-  let card: Awaited<ReturnType<typeof fetchCardInQa>>;
+  let card: Awaited<ReturnType<typeof fetchFeedbackCard>>;
   try {
-    card = await fetchCardInQa(cardId);
-    if (!card) return { ok: false, error: "This task is no longer in QA, so feedback is closed." };
+    card = await fetchFeedbackCard(cardId);
+    if (!card) return { ok: false, error: "This task has been archived on Trello, so feedback is closed." };
     await addCardComment(cardId, `**Feedback from ${safeName}**\n\n${cleanComment}`);
   } catch {
     return { ok: false, error: "Couldn't reach Trello. Please try again in a minute." };
